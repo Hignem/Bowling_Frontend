@@ -15,7 +15,7 @@ class BowlingReservationApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/reservation',
+      initialRoute: '/home',
       routes: AppRoutes.routes,
     );
   }

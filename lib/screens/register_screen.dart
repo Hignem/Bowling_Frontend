@@ -13,15 +13,49 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>(); // Klucz formularza do walidacji
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  // Funkcja do logowania
-  void _register() {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+
+  Future<void> _register() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // Przetwarzanie danych logowania
-      // W tym miejscu dodaj kod do logowania użytkownika (np. z Firebase)
-      Navigator.pushNamed(context, '/home'); // Przejście do strony głównej
+      print('Formularz poprawnie zwalidowany');
+      final String firstName = _firstNameController.text;
+      final String lastName = _lastNameController.text;
+      final String email = _emailController.text;
+      final String password = _passwordController.text;
+
+      final Uri url = Uri.parse('http://8080/api/register');
+
+      final Map<String, dynamic> payload = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+        'isAdmin': false,
+      };
+
+      try {
+        final http.Response response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(payload),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          Navigator.pushNamed(context, '/home');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Błąd rejestracji: ${response.body}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Wystąpił błąd: $e')),
+        );
+      }
     }
   }
 
@@ -59,109 +93,126 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: Color.fromRGBO(0, 0, 0, 0.5),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Zarejestruj się',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.bold,
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Zarejestruj się',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 24.0),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Imię',
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    filled: true,
-                                    fillColor: Colors.white12,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
+                            SizedBox(height: 24.0),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: TextFormField(
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Proszę wprowadzić imię';
+                                      }
+                                    },
+                                    controller: _firstNameController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Imię',
+                                      labelStyle:
+                                          TextStyle(color: Colors.white),
+                                      filled: true,
+                                      fillColor: Colors.white12,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
                                     ),
+                                    style: TextStyle(color: Colors.white),
                                   ),
-                                  style: TextStyle(color: Colors.white),
+                                ),
+                                SizedBox(width: 16.0),
+                                Expanded(
+                                  flex: 1,
+                                  child: TextFormField(
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Proszę wprowadzić nazwisko';
+                                      }
+                                    },
+                                    controller: _lastNameController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Nazwisko',
+                                      labelStyle:
+                                          TextStyle(color: Colors.white),
+                                      filled: true,
+                                      fillColor: Colors.white12,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                    ),
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.0),
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                labelText: 'Email',
+                                labelStyle: TextStyle(color: Colors.white),
+                                filled: true,
+                                fillColor: Colors.white12,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                              SizedBox(
-                                  width:
-                                      16.0), // Odstęp między Imieniem a Nazwiskiem
-                              Expanded(
-                                flex: 1,
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Nazwisko',
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    filled: true,
-                                    fillColor: Colors.white12,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                  ),
-                                  style: TextStyle(color: Colors.white),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Proszę wprowadzić adres email';
+                                } else if (!RegExp(
+                                        r"^[a-zA-Z0-9._%+-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,}$")
+                                    .hasMatch(value)) {
+                                  return 'Proszę wprowadzić prawidłowy adres email';
+                                }
+                                return null;
+                              },
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(height: 16.0),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                labelText: 'Hasło',
+                                labelStyle: TextStyle(color: Colors.white),
+                                filled: true,
+                                fillColor: Colors.white12,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 16.0),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              labelText: 'Email',
-                              labelStyle: TextStyle(color: Colors.white),
-                              filled: true,
-                              fillColor: Colors.white12,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                              style: TextStyle(color: Colors.white),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Proszę wprowadzić hasło';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Proszę wprowadzić adres email';
-                              } else if (!RegExp(
-                                      r"^[a-zA-Z0-9._%+-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,}$")
-                                  .hasMatch(value)) {
-                                return 'Proszę wprowadzić prawidłowy adres email';
-                              }
-                              return null;
-                            },
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          SizedBox(height: 16.0),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              labelText: 'Hasło',
-                              labelStyle: TextStyle(color: Colors.white),
-                              filled: true,
-                              fillColor: Colors.white12,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                            SizedBox(height: 24.0),
+                            ElevatedButton(
+                              onPressed: _register,
+                              child: Text('Zarejestruj się'),
                             ),
-                            style: TextStyle(color: Colors.white),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Proszę wprowadzić hasło';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 24.0),
-                          ElevatedButton(
-                            onPressed: _register,
-                            child: Text('Zarejestruj się'),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

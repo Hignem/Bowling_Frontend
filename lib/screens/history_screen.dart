@@ -8,7 +8,6 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Przykładowe dane zamówień
     final List<Map<String, String>> orders = [
       {
         'orderDate': '2024-05-01',
@@ -37,14 +36,12 @@ class HistoryScreen extends StatelessWidget {
       appBar: const CustomAppBar(title: 'Bowling Club'),
       body: Stack(
         children: [
-          // Tło ze zdjęciem
           Positioned.fill(
             child: Image.asset(
               'assets/bowling_inside.jpeg',
               fit: BoxFit.cover,
             ),
           ),
-          // Rozmycie tła
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
@@ -53,7 +50,6 @@ class HistoryScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Tabela z historią zamówień
           Center(
             child: Container(
               padding: const EdgeInsets.all(16.0),

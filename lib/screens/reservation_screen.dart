@@ -5,6 +5,10 @@ import 'package:bowling_frontend/widgets/custom_footer.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ReservationScreen extends StatefulWidget {
   const ReservationScreen({Key? key}) : super(key: key);
 
@@ -13,7 +17,6 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
-  // Wybrana data
   DateTime? _selectedDate;
 
   // Lista godzin otwarcia klubu
@@ -86,7 +89,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Zarezerwuj kort',
                     style: TextStyle(
                         color: Colors.white,
@@ -114,7 +117,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   ),
                   const SizedBox(height: 16.0),
 
-                  // Wybór godziny
                   Row(
                     children: [
                       const Icon(Icons.access_time, color: Colors.white),
@@ -148,7 +150,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   ),
                   const SizedBox(height: 16.0),
 
-                  // Wybór kortu
                   const Text(
                     'Wybierz kort:',
                     style: TextStyle(color: Colors.white, fontSize: 18.0),
@@ -173,13 +174,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
                   const SizedBox(height: 24.0),
 
-                  // Przycisk rezerwacji
                   ElevatedButton(
                     onPressed: () {
                       if (_selectedDate != null &&
                           _selectedHour != null &&
                           _selectedLane != null) {
-                        // Tutaj dodaj logikę rezerwacji
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

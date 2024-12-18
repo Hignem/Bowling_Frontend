@@ -1,6 +1,6 @@
 import 'package:bowling_frontend/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Aby korzystać z BackdropFilter
+import 'dart:ui';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,23 +11,18 @@ class HomeScreen extends StatelessWidget {
       appBar: const CustomAppBar(title: 'Bowling Club'),
       body: Stack(
         children: [
-          // Tło z obrazkiem
           Positioned.fill(
             child: Image.asset(
               'assets/bowling_inside.jpeg',
               fit: BoxFit.cover,
             ),
           ),
-          // Nakładka z efektem przyciemnienia i blur
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0), // Rozmycie
-              child: Container(color: Color.fromRGBO(0, 0, 0, 0.5)
-                  // Przyciemnienie tła
-                  ),
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: Container(color: Color.fromRGBO(0, 0, 0, 0.5)),
             ),
           ),
-          // Treść na tle (tekst i przycisk)
           Positioned.fill(
             child: Center(
               child: Column(
