@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('token', token);
         print('Token zapisany: $token');
 
-        Navigator.pushReplacementNamed(context, '/reservation');
+        Navigator.popAndPushNamed(context, '/reservation');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Nie udało się zalogować. Spróbuj ponownie.')),
