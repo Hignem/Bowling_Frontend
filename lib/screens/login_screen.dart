@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final password = _passwordController.text;
 
       final response = await http.post(
-        Uri.parse('http://localhost:8080/api/login'), // Twoje API
+        Uri.parse('http://localhost:8080/api/login'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -38,8 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final token = responseData['token'];
 
+        print('Otrzymany token: $token');
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
+        print('Token zapisany: $token');
+
         Navigator.pushReplacementNamed(context, '/reservation');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

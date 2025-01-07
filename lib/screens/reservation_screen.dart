@@ -17,6 +17,43 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
+  String? _firstName;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Brak tokena, użytkownik nie jest zalogowany.');
+      }
+      final response = await http.get(
+        Uri.parse('http://localhost:8080/api/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _firstName = data['firstName'];
+        });
+      } else {
+        throw Exception('Błąd pobierania profilu: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Błąd: $e');
+    }
+  }
+
   DateTime? _selectedDate;
 
   // Lista godzin otwarcia klubu
@@ -90,7 +127,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Zarezerwuj kort',
+                    _firstName != null
+                        ? 'Witaj $_firstName, zarezerwuj kort'
+                        : 'Witaj użytkowniku, zarezerwuj kort ',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 28.0,

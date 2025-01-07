@@ -27,13 +27,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final String email = _emailController.text;
       final String password = _passwordController.text;
 
-      final Uri url = Uri.parse('http://8080/api/register');
+      final Uri url = Uri.parse('http://localhost:8080/api/register');
 
       final Map<String, dynamic> payload = {
         'firstName': firstName,
         'lastName': lastName,
-        'email': email,
         'password': password,
+        'email': email,
+        'admin': false,
         'isAdmin': false,
       };
 
