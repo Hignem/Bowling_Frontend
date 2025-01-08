@@ -206,7 +206,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                             _selectedLane = selected ? lane : null;
                           });
                         },
-                        labelStyle: const TextStyle(color: Colors.white),
+                        labelStyle: TextStyle(
+                          color: _selectedLane == lane
+                              ? Colors.white
+                              : Colors.deepPurple,
+                        ),
                       );
                     }).toList(),
                   ),

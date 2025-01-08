@@ -49,7 +49,14 @@ class _CustomAppBarState extends State<CustomAppBar> {
       ),
       backgroundColor: const Color.fromRGBO(44, 30, 50, 1),
       actions: [
-        if (_isLoggedIn)
+        if (_isLoggedIn) ...[
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, '/history'),
+            child: const Text(
+              'Historia zamówień',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
           TextButton(
             onPressed: _logout,
             child: const Text(
@@ -57,7 +64,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
               style: TextStyle(color: Colors.white),
             ),
           )
-        else ...[
+        ] else ...[
           TextButton(
             onPressed: () => Navigator.pushNamed(context, '/login'),
             child: const Text(
