@@ -39,7 +39,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       title: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, '/home'),
+        onTap: () => _isLoggedIn
+            ? Navigator.pushNamed(context, '/reservation')
+            : Navigator.pushNamed(context, '/home'),
         child: Text(
           widget.title,
           style: const TextStyle(color: Colors.white),
