@@ -34,7 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'lastName': lastName,
         'password': password,
         'email': email,
-        'admin': false,
         'isAdmin': false,
       };
 
