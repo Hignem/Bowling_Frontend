@@ -111,6 +111,49 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
+  Future<void> _reserve() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final datePart = _selectedDate!
+          .toIso8601String()
+          .split('T')
+          .first; // rozdzielamy splitem i wybieramy pierwszy czlon bo _selectedDate po konwersji toIso8601String zwraca date i godzine oddzielona T:
+      final formattedDateTime =
+          "${datePart}T${_selectedHour}:00.000Z"; // Łączymy w formacie ISO 8601
+
+      final response = await http.post(
+          Uri.parse('http://localhost:8080/api/reservation'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode({
+            "alleyId": "$_selectedLane",
+            "reservationDateTime": "$formattedDateTime"
+          }));
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Dokonano rezerwacji!\n'
+              'Rezerwacja: ${_selectedDate!.day}-${_selectedDate!.month}-${_selectedDate!.year}, '
+              'Godzina: $_selectedHour, Tor: $_selectedLane',
+            ),
+            duration: const Duration(seconds: 10),
+          ),
+        );
+        Navigator.popAndPushNamed(context, "/reservation");
+      } else {
+        throw Exception('Błąd rezerwacji torów: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Błąd: $e');
+    }
+  }
+
   // Wybrany kort
   int? _selectedLane;
 
@@ -286,6 +329,21 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         ),
 
                   const SizedBox(height: 24.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_selectedDate != null &&
+                          _selectedHour != null &&
+                          _selectedLane != null) {
+                        _reserve();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Wypełnij wszystkie pola!')),
+                        );
+                      }
+                    },
+                    child: const Text('Zarezerwuj'),
+                  ),
                 ],
               ),
             ),
