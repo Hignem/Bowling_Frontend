@@ -112,7 +112,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
   // Wybrany kort
-  String? _selectedLane;
+  int? _selectedLane;
 
   // Funkcja otwierająca DatePicker
   Future<void> _pickDate() async {
@@ -168,8 +168,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 children: [
                   Text(
                     _firstName != null
-                        ? 'Witaj $_firstName, zarezerwuj kort'
-                        : 'Witaj użytkowniku, zarezerwuj kort ',
+                        ? 'Witaj $_firstName, zarezerwuj tor'
+                        : 'Witaj użytkowniku, zarezerwuj tor ',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 28.0,
@@ -231,36 +231,56 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   const SizedBox(height: 16.0),
 
                   const Text(
-                    'Wybierz kort:',
+                    'Wybierz tor:',
                     style: TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                   const SizedBox(height: 12.0),
                   _lanes.isEmpty
                       ? const Text(
-                          'Wybierz datę i godzinę, aby zobaczyć dostępne korty.',
+                          'Wybierz datę i godzinę, aby zobaczyć dostępne tory.',
                           style: TextStyle(color: Colors.white),
                         )
                       : Wrap(
                           spacing: 12.0,
-                          children: _lanes.map((lane) {
+                          children: _lanes.asMap().entries.map((entry) {
+                            final int index =
+                                entry.key; // Indeks aktualnego elementu.
+                            final Map<String, dynamic> lane =
+                                entry.value; // Element z listy _lanes.
                             final bool isAvailable = lane['isAvailable'];
-                            return ChoiceChip(
-                              label: Text(lane['name']),
-                              selected: _selectedLane == lane['id'],
-                              selectedColor: Colors.blueAccent,
-                              onSelected: isAvailable
-                                  ? (selected) {
-                                      setState(() {
-                                        _selectedLane =
-                                            selected ? lane['id'] : null;
-                                      });
-                                    }
-                                  : null,
-                              labelStyle: TextStyle(
-                                color: _selectedLane == lane
-                                    ? Colors.white
-                                    : Colors.deepPurple,
-                              ),
+                            return Column(
+                              spacing: 8,
+                              children: [
+                                Text(
+                                  "Tor ${index + 1}",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                ChoiceChip(
+                                  label: isAvailable
+                                      ? Text(lane['name'])
+                                      : Text("Zarezerwowane"),
+                                  selected: _selectedLane == lane['id'],
+                                  selectedColor: Colors.blueAccent,
+                                  onSelected: isAvailable
+                                      ? (selected) {
+                                          setState(() {
+                                            _selectedLane =
+                                                selected ? lane['id'] : null;
+                                          });
+                                        }
+                                      : null,
+                                  labelStyle: TextStyle(
+                                    color: _selectedLane == lane['id']
+                                        ? Colors.white
+                                        : Colors.deepPurple,
+                                  ),
+                                ),
+                                Text(
+                                    "Max: ${lane['maxPersons'].toString()} osób",
+                                    style: TextStyle(color: Colors.white)),
+                                Text("Cena: ${lane['price'].toString()} zł",
+                                    style: TextStyle(color: Colors.white)),
+                              ],
                             );
                           }).toList(),
                         ),
