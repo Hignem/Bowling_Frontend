@@ -52,6 +52,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   .toIso8601String()
                   .split('T')[1]
                   .substring(0, 5),
+              'alleyId': order['alleyId'],
+              'maxPersons': order['maxPersons'],
+              'price': order['price'],
               'orderDate': orderDateTime.toIso8601String().split('T')[0],
             };
           }).toList();
@@ -112,27 +115,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    // DataColumn(
-                    //   label: Text(
-                    //     'Kort',
-                    //     style: TextStyle(
-                    //         color: Colors.white, fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
-                    // DataColumn(
-                    //   label: Text(
-                    //     'Max. osób',
-                    //     style: TextStyle(
-                    //         color: Colors.white, fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
-                    // DataColumn(
-                    //   label: Text(
-                    //     'Cena',
-                    //     style: TextStyle(
-                    //         color: Colors.white, fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
+                    DataColumn(
+                      label: Text(
+                        'Kort',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Max. osób',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Cena',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                     DataColumn(
                       label: Text(
                         'Data zamówienia',
@@ -144,18 +147,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   rows: _orders.map((order) {
                     return DataRow(
                       cells: [
-                        DataCell(Text(order['reservationDate']!,
-                            style: const TextStyle(color: Colors.white))),
-                        DataCell(Text(order['reservationTime']!,
-                            style: const TextStyle(color: Colors.white))),
-                        // DataCell(Text(order['lane']!,
-                        //     style: const TextStyle(color: Colors.white))),
-                        // DataCell(Text(order['max_person']!,
-                        //     style: const TextStyle(color: Colors.white))),
-                        // DataCell(Text(order['price']!,
-                        //     style: const TextStyle(color: Colors.white))),
-                        DataCell(Text(order['orderDate']!,
-                            style: const TextStyle(color: Colors.white))),
+                        DataCell(Center(
+                          child: Text(order['reservationDate'],
+                              style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: Text(order['reservationTime'],
+                              style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: Text(order['alleyId'].toString(),
+                              style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: Text(order['maxPersons'].toString(),
+                              style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: Text(order['price'].toString(),
+                              style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: Text(order['orderDate'],
+                              style: const TextStyle(color: Colors.white)),
+                        )),
                       ],
                     );
                   }).toList(),
