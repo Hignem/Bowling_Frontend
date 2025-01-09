@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:intl/intl.dart';
+
 class ReservationScreen extends StatefulWidget {
   const ReservationScreen({Key? key}) : super(key: key);
 
@@ -64,13 +66,50 @@ class _ReservationScreenState extends State<ReservationScreen> {
   String? _selectedHour;
 
   // Lista kortów
-  final List<String> _lanes = [
-    'Kort 1',
-    'Kort 2',
-    'Kort 3',
-    'Kort 4',
-    'Kort 5'
-  ];
+  List<Map<String, dynamic>> _lanes = [];
+
+  Future<void> _fetchLanes() async {
+    if (_selectedDate == null || _selectedHour == null) {
+      // Nie pobieraj danych, jeśli brak daty lub godziny
+      setState(() {
+        _lanes = [];
+      });
+      return;
+    }
+    final String formattedDateTime =
+        '${_selectedDate!.toIso8601String().split("T").first}T$_selectedHour:00';
+
+    print('Formatted DateTime: $formattedDateTime');
+
+    try {
+      print(formattedDateTime);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final response = await http.get(
+        Uri.parse(
+            'http://localhost:8080/api/alley/available/$formattedDateTime'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> lanes = jsonDecode(response.body);
+        setState(() {
+          _lanes =
+              lanes.map((lane) => Map<String, dynamic>.from(lane)).toList();
+        });
+      } else {
+        throw Exception('Błąd pobierania kortów: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Błąd: $e');
+      setState(() {
+        _lanes = [];
+      });
+    }
+  }
 
   // Wybrany kort
   String? _selectedLane;
@@ -88,6 +127,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       setState(() {
         _selectedDate = picked;
       });
+      await _fetchLanes();
     }
   }
 
@@ -178,10 +218,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                                   style: const TextStyle(color: Colors.white)),
                             );
                           }).toList(),
-                          onChanged: (value) {
+                          onChanged: (value) async {
                             setState(() {
                               _selectedHour = value;
                             });
+                            await _fetchLanes();
                           },
                         ),
                       ),
@@ -194,51 +235,37 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     style: TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                   const SizedBox(height: 12.0),
-                  Wrap(
-                    spacing: 12.0,
-                    children: _lanes.map((lane) {
-                      return ChoiceChip(
-                        label: Text(lane),
-                        selected: _selectedLane == lane,
-                        selectedColor: Colors.blueAccent,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedLane = selected ? lane : null;
-                          });
-                        },
-                        labelStyle: TextStyle(
-                          color: _selectedLane == lane
-                              ? Colors.white
-                              : Colors.deepPurple,
+                  _lanes.isEmpty
+                      ? const Text(
+                          'Wybierz datę i godzinę, aby zobaczyć dostępne korty.',
+                          style: TextStyle(color: Colors.white),
+                        )
+                      : Wrap(
+                          spacing: 12.0,
+                          children: _lanes.map((lane) {
+                            final bool isAvailable = lane['isAvailable'];
+                            return ChoiceChip(
+                              label: Text(lane['name']),
+                              selected: _selectedLane == lane['id'],
+                              selectedColor: Colors.blueAccent,
+                              onSelected: isAvailable
+                                  ? (selected) {
+                                      setState(() {
+                                        _selectedLane =
+                                            selected ? lane['id'] : null;
+                                      });
+                                    }
+                                  : null,
+                              labelStyle: TextStyle(
+                                color: _selectedLane == lane
+                                    ? Colors.white
+                                    : Colors.deepPurple,
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
-                  ),
 
                   const SizedBox(height: 24.0),
-
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_selectedDate != null &&
-                          _selectedHour != null &&
-                          _selectedLane != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Rezerwacja: ${_selectedDate!.day}-${_selectedDate!.month}-${_selectedDate!.year}, '
-                              'Godzina: $_selectedHour, Kort: $_selectedLane',
-                            ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Wypełnij wszystkie pola!')),
-                        );
-                      }
-                    },
-                    child: const Text('Zarezerwuj'),
-                  ),
                 ],
               ),
             ),
