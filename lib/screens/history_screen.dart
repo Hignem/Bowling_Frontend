@@ -7,6 +7,7 @@ import 'dart:ui';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -43,9 +44,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
           _orders = orders.map((order) {
             final reservationDateTime =
                 DateTime.parse(order['reservationDateTime']);
+
             final orderDateTime = DateTime.parse(order['orderDateTime']);
 
             return {
+              'id': order['id'],
               'reservationDate':
                   reservationDateTime.toIso8601String().split('T')[0],
               'reservationTime': reservationDateTime
@@ -61,6 +64,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
         });
       } else {
         throw Exception('Błąd pobierania historii: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Błąd: $e');
+    }
+  }
+
+  Future<void> _cancelReservation(int id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.delete(
+        Uri.parse('http://localhost:8080/api/reservation/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Anulowano rezerwacje!'),
+          ),
+        );
+        Navigator.popAndPushNamed(context, "/history");
+      } else {
+        throw Exception(
+            'Błąd podczas anulowania rezerwacji: ${response.statusCode}');
       }
     } catch (e) {
       print('Błąd: $e');
@@ -143,12 +175,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
+                    DataColumn(
+                      label: Text(
+                        'Anulowanie ',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                   rows: _orders.map((order) {
                     return DataRow(
                       cells: [
                         DataCell(Center(
-                          child: Text(order['reservationDate'],
+                          child: Text(
+                              DateFormat('dd-MM-yyyy').format(
+                                  DateTime.parse(order['reservationDate'])),
                               style: const TextStyle(color: Colors.white)),
                         )),
                         DataCell(Center(
@@ -168,8 +209,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               style: const TextStyle(color: Colors.white)),
                         )),
                         DataCell(Center(
-                          child: Text(order['orderDate'],
+                          child: Text(
+                              DateFormat('dd-MM-yyyy')
+                                  .format(DateTime.parse(order['orderDate'])),
                               style: const TextStyle(color: Colors.white)),
+                        )),
+                        DataCell(Center(
+                          child: DateTime.parse(order['reservationDate'])
+                                  .isAfter(DateTime.now())
+                              ? ElevatedButton(
+                                  onPressed: () {
+                                    _cancelReservation(order['id']);
+                                  },
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                )
+                              : SizedBox(),
                         )),
                       ],
                     );
