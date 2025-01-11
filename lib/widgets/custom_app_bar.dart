@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
@@ -15,6 +18,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _CustomAppBarState extends State<CustomAppBar> {
   bool _isLoggedIn = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -24,9 +28,37 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isLoggedIn = prefs.getString('token') != null;
-    });
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      setState(() {
+        _isLoggedIn = true;
+      });
+      await _checkIfAdmin(token);
+    }
+  }
+
+  Future<void> _checkIfAdmin(String token) async {
+    try {
+      final url = 'http://localhost:8080/api/role';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _isAdmin = data['role'] == 'ROLE_ADMIN';
+        });
+      } else {
+        throw Exception('Nie udało się sprawdzić roli użytkownika.');
+      }
+    } catch (e) {
+      print('Błąd podczas sprawdzania roli: $e');
+    }
   }
 
   Future<void> _logout() async {
