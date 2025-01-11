@@ -1,3 +1,4 @@
+import 'package:bowling_frontend/screens/admin_screen.dart';
 import 'package:flutter/material.dart';
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
@@ -12,5 +13,6 @@ class AppRoutes {
     '/home': (context) => const HomeScreen(),
     '/reservation': (context) => const ReservationScreen(),
     '/history': (context) => const HistoryScreen(),
+    '/admin-panel': (context) => const AdminPanelScreen(),
   };
 }
