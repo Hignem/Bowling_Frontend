@@ -55,6 +55,46 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
+  Future<void> _deleteLane(int id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.delete(
+        Uri.parse('http://localhost:8080/api/alley/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tor został pomyślnie usunięty.'),
+          ),
+        );
+        setState(() {
+          _lanes.removeWhere((lane) => lane['id'] == id);
+        });
+      } else {
+        print('Błąd usuwania toru: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nie udało się usunąć toru. Spróbuj ponownie.'),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Błąd: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Wystąpił błąd podczas usuwania toru.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,7 +171,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
-                                  // _deleteLane();
+                                  _deleteLane(lane['id']);
                                 },
                               ),
                             ],
