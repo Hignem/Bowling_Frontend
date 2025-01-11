@@ -81,6 +81,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
       ),
       backgroundColor: const Color.fromRGBO(44, 30, 50, 1),
       actions: [
+        if (_isAdmin) ...[
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, '/admin-panel'),
+            child: const Text(
+              'Panel administratora',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
         if (_isLoggedIn) ...[
           TextButton(
             onPressed: () => Navigator.pushNamed(context, '/history'),
