@@ -95,6 +95,50 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
+  Future<void> addLane(BuildContext context) async {
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => LaneWindow(),
+      );
+      // jesli uzytkownik nacisnie anuluj nie wyrzuci bledu
+      if (result == null) return;
+
+      // Pobierz token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Użytkownik nie jest zalogowany.');
+      }
+
+      // Wykonaj żądanie POST
+      final response = await http.post(
+        Uri.parse('http://localhost:8080/api/alley'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(result),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dodano tor.')),
+        );
+
+        await _fetchLanes();
+      } else {
+        throw Exception('Błąd dodawania toru: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Obsługa błędów
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Wystąpił błąd: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,7 +227,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () {
-                      // _addOrEditLane();
+                      //tutaj trzeba wywolac prawidlowo ta funkcje
+                      addLane(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
@@ -264,6 +309,17 @@ class LaneWindow extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
+            final name = _nameController.text.trim();
+            final price = _priceController.text.trim();
+            final maxPersons = _maxPersonsController.text.trim();
+
+            if (name.isEmpty || price.isEmpty || maxPersons.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Wszystkie pola muszą być wypełnione!')),
+              );
+              return; // Przerywamy dalsze działanie
+            }
             final result = {
               // jesli edytujemy wstawiamy id zaciagniete juz wczesniej
               if (lane != null) 'id': lane!['id'],
