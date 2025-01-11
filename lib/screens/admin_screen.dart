@@ -216,3 +216,66 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 }
+
+class LaneWindow extends StatelessWidget {
+  final Map<String, dynamic>? lane;
+  //? - moze przyjac null, bo wykorzystujemy ten widget do edycji i dodawaniu
+
+  LaneWindow({this.lane}); //konstruktor obiektu
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _maxPersonsController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    //TextEditingController nie moze miec null, wiec jesli bedzie taka sytuacja przypiszemy ''
+    if (lane != null) {
+      _nameController.text = lane!['name'] ?? '';
+      _priceController.text = lane!['price']?.toString() ?? '';
+      _maxPersonsController.text = lane!['maxPersons']?.toString() ?? '';
+    }
+
+    return AlertDialog(
+      title: Text(lane != null ? 'Edytuj tor' : 'Dodaj tor'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Nazwa toru'),
+          ),
+          TextField(
+            controller: _priceController,
+            decoration: const InputDecoration(labelText: 'Cena'),
+            keyboardType: TextInputType.number,
+          ),
+          TextField(
+            controller: _maxPersonsController,
+            decoration: const InputDecoration(labelText: 'Max osób'),
+            keyboardType: TextInputType.number,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Anuluj'),
+        ),
+        TextButton(
+          onPressed: () {
+            final result = {
+              // jesli edytujemy wstawiamy id zaciagniete juz wczesniej
+              if (lane != null) 'id': lane!['id'],
+              'name': _nameController.text,
+              'price': double.tryParse(_priceController.text) ?? 0.0,
+              'maxPersons': int.tryParse(_maxPersonsController.text) ?? 0,
+            };
+            Navigator.pop(context, result);
+          },
+          child: const Text('Zapisz'),
+        ),
+      ],
+    );
+  }
+}
