@@ -95,6 +95,50 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
+  Future<void> editLane(BuildContext context, int id) async {
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => LaneWindow(),
+      );
+      // jesli uzytkownik nacisnie anuluj nie wyrzuci bledu
+      if (result == null) return;
+
+      // Pobierz token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Użytkownik nie jest zalogowany.');
+      }
+
+      // Wykonaj żądanie POST
+      final response = await http.put(
+        Uri.parse('http://localhost:8080/api/alley/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(result),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dodano tor.')),
+        );
+
+        await _fetchLanes();
+      } else {
+        throw Exception('Błąd dodawania toru: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Obsługa błędów
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Wystąpił błąd: $e')),
+      );
+    }
+  }
+
   Future<void> addLane(BuildContext context) async {
     try {
       final result = await showDialog<Map<String, dynamic>>(
@@ -208,7 +252,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 icon:
                                     const Icon(Icons.edit, color: Colors.blue),
                                 onPressed: () {
-                                  // _addOrEditLane();
+                                  editLane(context, lane['id']);
                                 },
                               ),
                               IconButton(
