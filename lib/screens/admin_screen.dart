@@ -95,11 +95,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
-  Future<void> editLane(BuildContext context, int id) async {
+  Future<void> editLane(BuildContext context, Map<String, dynamic> lane) async {
     try {
       final result = await showDialog<Map<String, dynamic>>(
         context: context,
-        builder: (context) => LaneWindow(),
+        builder: (context) => LaneWindow(lane: lane),
       );
       // jesli uzytkownik nacisnie anuluj nie wyrzuci bledu
       if (result == null) return;
@@ -114,7 +114,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
       // Wykonaj żądanie POST
       final response = await http.put(
-        Uri.parse('http://localhost:8080/api/alley/$id'),
+        Uri.parse('http://localhost:8080/api/alley/${lane['id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -252,7 +252,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 icon:
                                     const Icon(Icons.edit, color: Colors.blue),
                                 onPressed: () {
-                                  editLane(context, lane['id']);
+                                  editLane(context, lane);
                                 },
                               ),
                               IconButton(
@@ -319,10 +319,11 @@ class LaneWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //TextEditingController nie moze miec null, wiec jesli bedzie taka sytuacja przypiszemy ''
+
     if (lane != null) {
-      _nameController.text = lane!['name'] ?? '';
-      _priceController.text = lane!['price']?.toString() ?? '';
-      _maxPersonsController.text = lane!['maxPersons']?.toString() ?? '';
+      _nameController.text = lane!['name'];
+      _priceController.text = lane!['price'].toString();
+      _maxPersonsController.text = lane!['maxPersons'].toString();
     }
 
     return AlertDialog(
